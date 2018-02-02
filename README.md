@@ -41,6 +41,7 @@ Linuxbrew の自動インストールスクリプト ```altinstall.rb``` の起�
 ```
  $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/z80oolong/linuxbrew-altinstall/master/install)"
 ```
+
 ## 謝辞
 
 まず最初に、 [Linuxbrew][BREW] の自動インストールスクリプトの修正に当たって、 [Linuxbrew][BREW] 全体の開発を行っている [Shaun Jackman 氏][SHAU]を始めとする [Linuxbrew][BREW] の開発コミュニティの各氏に心より感謝致します。
