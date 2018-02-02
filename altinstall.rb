@@ -201,6 +201,7 @@ def shell_profile
 end
 
 # Class for installing vendor portable ruby
+# Fix to install vendor portable ruby before 'brew update --force' by Z.OOL. <zool@zool.jpn.org>
 class PortableRuby
   RUBY_VERSION = "2.3.3"
   RUBY_MAJOR_VERSION = "2.3"
@@ -245,6 +246,7 @@ class PortableRuby
     ohai "Installing vendor ruby to #{vendor_prefix(prefix)}"
 
     if bottle_tag.nil?
+      # If linuxbrew can't use the bottle of portable ruby, vendor ruby is build from source code.
       Dir.chdir "/tmp" do
         system "/usr/bin/curl --output ruby-#{RUBY_VERSION}.tar.gz #{RUBY_SOURCE_URL}"
         system "/bin/tar -zxf ruby-#{RUBY_VERSION}.tar.gz"
@@ -259,6 +261,7 @@ class PortableRuby
       system "/bin/rm -rf /tmp/ruby-#{RUBY_VERSION}"
       system "/bin/rm /tmp/ruby-#{RUBY_VERSION}.tar.gz"
     else
+      # linuxbrew use the bottle of portable ruby.
       system "/bin/mkdir -p #{vendor_prefix(prefix)}"
       system "/bin/bash -o pipefail -c '/usr/bin/curl -L #{bottle_url} | /bin/tar -zxf - -C #{vendor_prefix(prefix)}'"
     end
@@ -462,6 +465,7 @@ Dir.chdir HOMEBREW_REPOSITORY do
     system "ln", "-sf", "#{HOMEBREW_REPOSITORY}/bin/brew", "#{HOMEBREW_PREFIX}/bin/brew" unless HOMEBREW_REPOSITORY == HOMEBREW_PREFIX
 
     # Install vendor portable ruby
+    # Fixed by Z.OOL. <zool@zool.jpn.org>
     PortableRuby::install(HOMEBREW_PREFIX)
 
     system "#{HOMEBREW_PREFIX}/bin/brew", "update", "--force"
@@ -476,6 +480,7 @@ Dir.chdir HOMEBREW_REPOSITORY do
     system "ln", "-sf", "#{HOMEBREW_REPOSITORY}/bin/brew", "#{HOMEBREW_PREFIX}/bin/brew" unless HOMEBREW_REPOSITORY == HOMEBREW_PREFIX
 
     # Install vendor portable ruby
+    # Fixed by Z.OOL. <zool@zool.jpn.org>
     PortableRuby::install(HOMEBREW_PREFIX)
 
     system "/bin/mkdir", "-p", core_tap
