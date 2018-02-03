@@ -6,7 +6,7 @@
 
 しかし、 [64 bit ARM アーキテクチャ][ARMP]等の環境で動作する Linux の各ディストリビューションにおいて、 [Linuxbrew 公式ページ][BREW]が公開している [Linuxbrew][BREW] を自動的にインストールするためのスクリプトを起動すると、以下のようなエラーメッセージを出力してスクリプトが異常終了します。
 
-```shell-session
+```
   $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
   ...
   Error: Cannot find a vendored version of ruby for your aarch64
