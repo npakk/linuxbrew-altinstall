@@ -4,7 +4,7 @@
 
 [Linuxbrew][BREW] とは、 Mac OS X 上における、ソースコードの取得及びビルドに基づいたパッケージ管理システムである [Homebrew][HBRW] を Linux の各ディストリビューション向けに移植したものです。
 
-しかし、 [64 bit ARM アーキテクチャ][ARMP]等の環境で動作する Linux の各ディストリビューションにおいて、 [Linuxbrew 公式ページ][BREW]が公開している [Linuxbrew][BREW] を自動的にインストールするためのスクリプトを起動すると、以下のようなエラーメッセージを出力してスクリプトが異常終了します。
+しかし、 [64 bit ARM アーキテクチャ][ARMP]等の環境で動作する Linux の各ディストリビューションにおいて、 [Linuxbrew 公式ページ][BREW]が公開している [Linuxbrew を自動的にインストールするためのスクリプト][BRIN]を起動すると、以下のようなエラーメッセージを出力してスクリプトが異常終了します。
 
 ```
   $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
@@ -15,9 +15,9 @@
   $
 ```
 
-```altinstall.rb``` は、 [Linuxbrew 公式ページ][BREW]による [Linuxbrew][BREW] の自動インストールスクリプトについて、 [Linuxbrew][BREW] 本体が使用する ruby 処理系の導入に関する問題を回避するように修正した代替の自動インストールスクリプトです。
+```altinstall.rb``` は、 [Linuxbrew 公式ページ][BREW]による [Linuxbrew の自動インストールスクリプト][BRIN]について、 [Linuxbrew][BREW] 本体が使用する ruby 処理系の導入に関する問題を回避するように修正した代替の自動インストールスクリプトです。
 
-なお、 [Linuxbrew][BREW] の自動インストールスクリプトが異常終了する詳細とその回避手法についての詳細は、 "[Linuxbrew の通常のインストール手法が異常終了する場合における代替の導入手法][ZOLQ]" の投稿を御覧下さい。
+なお、 [Linuxbrew の自動インストールスクリプト][BRIN]が異常終了する詳細とその回避手法についての詳細は、 "[Linuxbrew の通常のインストール手法が異常終了する場合における代替の導入手法][ZOLQ]" の投稿を御覧下さい。
 
 ## 使用法
 
@@ -30,7 +30,7 @@ Linuxbrew の自動インストールスクリプト ```altinstall.rb``` の起�
  $ sudo apt-get install openssl libreadline6-dev libyaml-dev
 ```
 
-次に、 [Linuxbrew 公式ページ][BREW]による [Linuxbrew][BREW] の自動インストールスクリプトの起動方法に代えて、以下のコマンドを実行して [Linuxbrew][BREW] を導入します。
+次に、 [Linuxbrew 公式ページ][BREW]による [Linuxbrew の自動インストールスクリプト][BRIN]の起動方法に代えて、以下のコマンドを実行して [Linuxbrew][BREW] を導入します。
 
 ```
  $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/z80oolong/linuxbrew-altinstall/master/altinstall.rb)"
@@ -39,12 +39,12 @@ Linuxbrew の自動インストールスクリプト ```altinstall.rb``` の起�
 また、以下のコマンドの実行によっても [Linuxbrew][BREW] を導入することが出来ます。
 
 ```
- $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/z80oolong/linuxbrew-altinstall/master/install)"
+ $ sh -c "$(curl -fsSL https://raw.githubusercontent.com/z80oolong/linuxbrew-altinstall/master/install.sh)"
 ```
 
 ## 謝辞
 
-まず最初に、 [Linuxbrew][BREW] の自動インストールスクリプトの修正に当たって、 [Linuxbrew][BREW] 全体の開発を行っている [Shaun Jackman 氏][SHAU]を始めとする [Linuxbrew][BREW] の開発コミュニティの各氏に心より感謝致します。
+まず最初に、 [Linuxbrew の自動インストールスクリプト][BRIN]の修正に当たって、 [Linuxbrew][BREW] 全体の開発を行っている [Shaun Jackman 氏][SHAU]を始めとする [Linuxbrew][BREW] の開発コミュニティの各氏に心より感謝致します。
 
 また、 [Linuxbrew][BREW] の詳細に関しては、 [Linuxbrew 公式ページ][BREW]及び [Linuxbrew][BREW] のリポジトリに含まれるソースコード及びリポジトリに同梱される各種資料も併せて参考にしました。
 
@@ -54,7 +54,7 @@ Linuxbrew の自動インストールスクリプト ```altinstall.rb``` の起�
 
 ## 使用条件
 
-本スクリプトは、 [Linuxbrew の開発コミュニティ][BREW]によって作成された [Linuxbrew][BREW] の自動インストールスクリプトを修正したものであり、 [Linuxbrew の開発コミュニティ][BREW]及び [Z.OOL. (mailto:zool@zool.jpn.org)][ZOOL] が著作権を有します。
+本スクリプトは、 [Linuxbrew の開発コミュニティ][BREW]によって作成された [Linuxbrew の自動インストールスクリプト][BRIN]を修正したものであり、 [Linuxbrew の開発コミュニティ][BREW]及び [Z.OOL. (mailto:zool@zool.jpn.org)][ZOOL] が著作権を有します。
 
 従って、本スクリプトは [Linuxbrew][BREW] のライセンスと同様である [BSD 2-Clause License][BSD2] に基づいて配布されるものとします。詳細については、本リポジトリに同梱する ```LICENSE``` を参照して下さい。
 
@@ -62,6 +62,7 @@ Linuxbrew の自動インストールスクリプト ```altinstall.rb``` の起�
 
 [HBRW]:http://brew.sh/index_ja.html
 [BREW]:http://linuxbrew.sh/
+[BRIN]:https://github.com/Linuxbrew/install
 [ARMP]:https://www.arm.com/
 [ZOLQ]:https://qiita.com/z80oolong/items/61feb20a9356532a15da
 [SHAU]:http://sjackman.ca/
