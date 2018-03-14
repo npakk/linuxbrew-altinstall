@@ -44,7 +44,7 @@ Linuxbrew の自動インストールスクリプト ```altinstall.rb``` の起�
 
 ## 謝辞
 
-まず最初に、 [Linuxbrew の自動インストールスクリプト][BRIN]の修正に当たって、 [Linuxbrew][BREW] 全体の開発を行っている [Shaun Jackman 氏][SHAU]を始めとする [Linuxbrew][BREW] の開発コミュニティの各氏に心より感謝致します。
+まず最初に、 [Linuxbrew の自動インストールスクリプト][BRIN]の修正に当たって、 [Linuxbrew][BREW] 全体の開発を行っている [Shaun Jackman 氏][SHAU]を始めとする [Linuxbrew][BREW] の開発コミュニティ及び [Homebrew][HBRW] 開発コミュニティの各氏に心より感謝致します。
 
 また、 [Linuxbrew][BREW] の詳細に関しては、 [Linuxbrew 公式ページ][BREW]及び [Linuxbrew][BREW] のリポジトリに含まれるソースコード及びリポジトリに同梱される各種資料も併せて参考にしました。
 
@@ -54,9 +54,33 @@ Linuxbrew の自動インストールスクリプト ```altinstall.rb``` の起�
 
 ## 使用条件
 
-本スクリプトは、 [Linuxbrew の開発コミュニティ][BREW]によって作成された [Linuxbrew の自動インストールスクリプト][BRIN]を修正したものであり、 [Linuxbrew の開発コミュニティ][BREW]及び [Z.OOL. (mailto:zool@zool.jpn.org)][ZOOL] が著作権を有します。
+本スクリプトは、 [Linuxbrew][BREW] 及び [Homebrew][HBRW] の開発コミュニティによって作成された [Linuxbrew の自動インストールスクリプト][BRIN]を修正したものであり、 [Linuxbrew][BREW] と [Homebrew][HBRW] の開発コミュニティ及び [Z.OOL. (mailto:zool@zool.jpn.org)][ZOOL] が著作権を有します。
 
-従って、本スクリプトは [Linuxbrew][BREW] のライセンスと同様である [BSD 2-Clause License][BSD2] に基づいて配布されるものとします。詳細については、本リポジトリに同梱する ```LICENSE``` を参照して下さい。
+従って、本スクリプトは [Linuxbrew][BREW] 及び [Homebrew][HBRW] のライセンスと同様である [BSD 2-Clause License][BSD2] に基づいて配布されるものとします。詳細については、本リポジトリに同梱する ```LICENSE``` 及び [Linuxbrew の自動インストールスクリプト][BRIN]の ```LICENSE.txt``` の原文である ```doc/LICENSE.txt``` を参照して下さい。
+
+## 追記
+
+下記に、 [Linuxbrew][BREW] 及び [Homebrew][HBRW] の開発コミュニティによって作成された [Linuxbrew の自動インストールスクリプト][BRIN]の README.md の原文を示します。
+
+----
+
+# Linuxbrew (un)installer
+
+[![Build Status](https://travis-ci.org/Linuxbrew/install.svg?branch=master)](https://travis-ci.org/Linuxbrew/install)
+
+## Install Linuxbrew
+```bash
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
+```
+
+More installation information and options at http://linuxbrew.sh/#installation
+
+## Uninstall Linuxbrew
+```bash
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/uninstall)"
+```
+
+Download the uninstall script and run `./uninstall --help` to view more uninstall options.
 
 <!-- 外部リンク一覧 -->
 
