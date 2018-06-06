@@ -204,6 +204,7 @@ end
 # Fix to install vendor portable ruby before 'brew update --force' by Z.OOL. <zool@zool.jpn.org>
 class PortableRuby
   RUBY_VERSION = "2.3.3"
+  RUBY_VENDOR_VERSION = "2.3.3_2"
   RUBY_MAJOR_VERSION = "2.3"
   RUBY_SOURCE_URL = "https://cache.ruby-lang.org/pub/ruby/#{RUBY_MAJOR_VERSION}/ruby-#{RUBY_VERSION}.tar.gz"
 
@@ -221,7 +222,7 @@ class PortableRuby
     if linux?
       case arch
       when "x86_64"; return "x86_64_linux"
-      when "armv7l", "armv8l", "aarch64"; return "armv7l_linux"
+      when "armv7l", "armv8l", "aarch64"; return "armv6_linux"
       else; return nil
       end
     else
@@ -237,7 +238,7 @@ class PortableRuby
   end
 
   def bottle_url
-    return "https://homebrew.bintray.com/bottles-portable/portable-ruby-#{RUBY_VERSION}.#{bottle_tag}.bottle.1.tar.gz"
+    return "https://github.com/Homebrew/homebrew-portable-ruby/releases/download/#{RUBY_VENDOR_VERSION}/portable-ruby-#{RUBY_VENDOR_VERSION}.#{bottle_tag}.bottle.tar.gz"
   end
 
   public
@@ -248,12 +249,13 @@ class PortableRuby
     if bottle_tag.nil?
       # If linuxbrew can't use the bottle of portable ruby, vendor ruby is build from source code.
       Dir.chdir "/tmp" do
-        system "/usr/bin/curl --output ruby-#{RUBY_VERSION}.tar.gz #{RUBY_SOURCE_URL}"
+        system "curl --output ruby-#{RUBY_VERSION}.tar.gz #{RUBY_SOURCE_URL}"
         system "/bin/tar -zxf ruby-#{RUBY_VERSION}.tar.gz"
       end
 
       Dir.chdir "/tmp/ruby-#{RUBY_VERSION}" do
-        system "/bin/bash ./configure --prefix=#{vendor_prefix(prefix)}/portable-ruby/#{RUBY_VERSION}"
+        ENV["PKG_CONFIG_LIBDIR"]="/usr/lib/pkgconfig:/usr/local/lib/pkgconfig"
+        system "/bin/bash ./configure --prefix=#{vendor_prefix(prefix)}/portable-ruby/#{RUBY_VENDOR_VERSION} --disable-install-doc --disable-install-rdoc --with-out-ext=tk --without-gmp"
         system "/usr/bin/make -j#{cpu_core}"
         system "/usr/bin/make install"
       end
@@ -263,16 +265,16 @@ class PortableRuby
     else
       # linuxbrew use the bottle of portable ruby.
       system "/bin/mkdir -p #{vendor_prefix(prefix)}"
-      system "/bin/bash -o pipefail -c '/usr/bin/curl -L #{bottle_url} | /bin/tar -zxf - -C #{vendor_prefix(prefix)}'"
+      system "/bin/bash -o pipefail -c 'curl -L #{bottle_url} | /bin/tar -zxf - -C #{vendor_prefix(prefix)}'"
     end
 
     Dir.chdir "#{vendor_prefix(prefix)}/portable-ruby" do
-      system "/bin/ln -sf #{RUBY_VERSION} current"
+      system "/bin/ln -sf #{RUBY_VENDOR_VERSION} current"
     end
 
     ohai "Installing vendor ruby successful"
 
-    ENV["PATH"] = "#{vendor_prefix(prefix)}/portable-ruby/#{RUBY_VERSION}/bin:#{ENV['PATH']}"
+    ENV["PATH"] = "#{vendor_prefix(prefix)}/portable-ruby/#{RUBY_VENDOR_VERSION}/bin:#{ENV['PATH']}"
     ruby_path = `/usr/bin/which ruby`.chomp
 
     ohai "#{ruby_path}"

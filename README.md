@@ -21,22 +21,16 @@
 
 ## 使用法
 
-Linuxbrew の自動インストールスクリプト ```altinstall.rb``` の起動方法は、 [Linuxbrew 公式ページ][BREW]による [Linuxbrew][BREW] のインストールスクリプトの起動方法とほぼ同じですが、 ```altinstall.rb``` の起動前に、 [Linuxbrew][BREW] に依存するシステムのパッケージの他に、 ```openssl, readline, libyaml``` をインストールする必要が有ります。
+Linuxbrew の自動インストールスクリプト ```altinstall.rb``` の起動方法は、 [Linuxbrew 公式ページ][BREW]による [Linuxbrew][BREW] のインストールスクリプトの起動方法とほぼ同じですが、 ```altinstall.rb``` の起動前に、 [Linuxbrew][BREW] に依存するシステムのパッケージの他に、 ```openssl, readline, libyaml, libgdbm-dev``` をインストールする必要が有ります。
 
 例えば、 Debian 系のディストリビューションの場合は、以下のようにしてパッケージをインストールします。
 
 ```
  $ sudo apt-get install build-essential curl file git python-setuptools ruby
- $ sudo apt-get install openssl libreadline6-dev libyaml-dev
+ $ sudo apt-get install openssl libreadline6-dev libyaml-dev libgdbm-dev
 ```
 
 次に、 [Linuxbrew 公式ページ][BREW]による [Linuxbrew の自動インストールスクリプト][BRIN]の起動方法に代えて、以下のコマンドを実行して [Linuxbrew][BREW] を導入します。
-
-```
- $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/z80oolong/linuxbrew-altinstall/master/altinstall.rb)"
-```
-
-また、以下のコマンドの実行によっても [Linuxbrew][BREW] を導入することが出来ます。
 
 ```
  $ sh -c "$(curl -fsSL https://raw.githubusercontent.com/z80oolong/linuxbrew-altinstall/master/install.sh)"
