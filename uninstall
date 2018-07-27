@@ -117,7 +117,8 @@ if homebrew_prefix_candidates.empty? # Attempt to locate Homebrew unless `--path
   end
   homebrew_prefix_candidates << Pathname.new(prefix.strip).dirname.parent unless prefix.empty?
   homebrew_prefix_candidates << Pathname.new("/usr/local") # Homebrew default path
-  homebrew_prefix_candidates << Pathname.new("#{ENV["HOME"]}/.linuxbrew") # Linuxbrew default path
+  homebrew_prefix_candidates << Pathname.new("#{ENV["HOME"]}/.linuxbrew")
+  homebrew_prefix_candidates << Pathname.new("/home/linuxbrew/.linuxbrew") # Linuxbrew default path
 end
 
 HOMEBREW_PREFIX = homebrew_prefix_candidates.detect do |p|
@@ -308,7 +309,6 @@ end
 unless options[:quiet]
   if @failed
     warn "Homebrew partially uninstalled (but there were steps that failed)!"
-    puts "To finish uninstalling rerun this script with `sudo`."
   else
     ohai "Homebrew uninstalled!"
   end
