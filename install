@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
-# This script installs only to /usr/local on Mac.
+# This script installs only to /usr/local on macOS.
 # On Linux, it installs to /home/linuxbrew/.linuxbrew if you have sudo access
 # and ~/.linuxbrew otherwise.
-# To install elsewhere you can just untar
-# https://github.com/Homebrew/homebrew/tarball/master anywhere you like or
-# change the value of HOMEBREW_PREFIX.
+# To install elsewhere you can untar
+# https://github.com/Linuxbrew/brew/tarball/master anywhere you like
+# or set the environment variable HOMEBREW_PREFIX.
 
 def mac?
   RUBY_PLATFORM[/darwin/]
@@ -31,9 +31,17 @@ else
   CORE_TAP_REPO = "https://github.com/Linuxbrew/homebrew-core".freeze
 end
 
+# TODO: bump version when new macOS is released
+MACOS_LATEST_SUPPORTED = "10.14".freeze
+# TODO: bump version when new macOS is released
+MACOS_OLDEST_SUPPORTED = "10.12".freeze
+
 # no analytics during installation
 ENV["HOMEBREW_NO_ANALYTICS_THIS_RUN"] = "1"
 ENV["HOMEBREW_NO_ANALYTICS_MESSAGE_OUTPUT"] = "1"
+
+# get nicer global variables
+require "English"
 
 module Tty
   module_function
@@ -50,16 +58,16 @@ module Tty
     escape 0
   end
 
-  def bold(n = 39)
-    escape "1;#{n}"
+  def bold(code = 39)
+    escape "1;#{code}"
   end
 
   def underline
     escape "4;39"
   end
 
-  def escape(n)
-    "\033[#{n}m" if STDOUT.tty?
+  def escape(code)
+    "\033[#{code}m" if STDOUT.tty?
   end
 end
 
@@ -85,8 +93,9 @@ end
 
 def sudo?
   return @have_sudo unless @have_sudo.nil?
+
   Kernel.system "/usr/bin/sudo", "-v"
-  @have_sudo = $? && $?.success?
+  @have_sudo = $CHILD_STATUS && $CHILD_STATUS.success?
 end
 
 def sudo(*args)
@@ -137,15 +146,22 @@ def force_curl?
 end
 
 def macos_version
-  return nil unless mac?
+  return unless mac?
+
   @macos_version ||= Version.new(`/usr/bin/sw_vers -productVersion`.chomp[/10\.\d+/])
 end
 
 def should_install_command_line_tools?
+  return false unless mac?
   return false if force_curl?
-  return false if !mac? || macos_version < "10.9"
-  !File.exist?("/Library/Developer/CommandLineTools/usr/bin/git") ||
-    !File.exist?("/usr/include/iconv.h")
+  return false if macos_version < "10.9"
+
+  if macos_version > "10.13"
+    !File.exist?("/Library/Developer/CommandLineTools/usr/bin/git")
+  else
+    !File.exist?("/Library/Developer/CommandLineTools/usr/bin/git") ||
+      !File.exist?("/usr/include/iconv.h")
+  end
 end
 
 def git
@@ -157,38 +173,40 @@ def git
     "git"
   else
     exe = `xcrun -find git 2>/dev/null`.chomp
-    exe if $? && $?.success? && !exe.empty? && File.executable?(exe)
+    exe if $CHILD_STATUS && $CHILD_STATUS.success? && !exe.empty? && File.executable?(exe)
   end
 
   return unless @git
+
   # Github only supports HTTPS fetches on 1.7.10 or later:
   # https://help.github.com/articles/https-cloning-errors
   `#{@git} --version` =~ /git version (\d\.\d+\.\d+)/
-  return if $1.nil?
-  return if Version.new($1) < "1.7.10"
+  return if Regexp.last_match(1).nil?
+  return if Version.new(Regexp.last_match(1)) < "1.7.10"
 
   @git
 end
 
-def user_only_chmod?(d)
-  return false unless File.directory?(d)
-  mode = File.stat(d).mode & 0777
+def user_only_chmod?(path)
+  return false unless File.directory?(path)
+
+  mode = File.stat(path).mode & 0777
   # u = (mode >> 6) & 07
   # g = (mode >> 3) & 07
   # o = (mode >> 0) & 07
   mode != 0755
 end
 
-def chmod?(d)
-  File.exist?(d) && !(File.readable?(d) && File.writable?(d) && File.executable?(d))
+def chmod?(path)
+  File.exist?(path) && !(File.readable?(path) && File.writable?(path) && File.executable?(path))
 end
 
-def chown?(d)
-  !File.owned?(d)
+def chown?(path)
+  !File.owned?(path)
 end
 
-def chgrp?(d)
-  !File.grpowned?(d)
+def chgrp?(path)
+  !File.grpowned?(path)
 end
 
 # return the shell profile file based on users' preference shell
@@ -203,8 +221,8 @@ end
 # Class for installing vendor portable ruby
 # Fix to install vendor portable ruby before 'brew update --force' by Z.OOL. <zool@zool.jpn.org>
 class PortableRuby
-  RUBY_VERSION = "2.3.3"
-  RUBY_VENDOR_VERSION = "2.3.3_2"
+  RUBY_VERSION = "2.3.7"
+  RUBY_VENDOR_VERSION = "2.3.7"
   RUBY_MAJOR_VERSION = "2.3"
   RUBY_SOURCE_URL = "https://cache.ruby-lang.org/pub/ruby/#{RUBY_MAJOR_VERSION}/ruby-#{RUBY_VERSION}.tar.gz"
 
@@ -222,7 +240,6 @@ class PortableRuby
     if linux?
       case arch
       when "x86_64"; return "x86_64_linux"
-      when "armv7l", "armv8l", "aarch64"; return "armv6_linux"
       else; return nil
       end
     else
@@ -238,7 +255,7 @@ class PortableRuby
   end
 
   def bottle_url
-    return "https://github.com/Homebrew/homebrew-portable-ruby/releases/download/#{RUBY_VENDOR_VERSION}/portable-ruby-#{RUBY_VENDOR_VERSION}.#{bottle_tag}.bottle.tar.gz"
+    return "https://homebrew.bintray.com/bottles-portable-ruby/portable-ruby-#{RUBY_VENDOR_VERSION}.#{bottle_tag}.bottle.tar.gz"
   end
 
   public
@@ -251,16 +268,17 @@ class PortableRuby
       Dir.chdir "/tmp" do
         system "curl --output ruby-#{RUBY_VERSION}.tar.gz #{RUBY_SOURCE_URL}"
         system "/bin/tar -zxf ruby-#{RUBY_VERSION}.tar.gz"
+        system "mv ./ruby-#{RUBY_VERSION} ./portable-ruby-#{RUBY_VERSION}"
       end
 
-      Dir.chdir "/tmp/ruby-#{RUBY_VERSION}" do
+      Dir.chdir "/tmp/portable-ruby-#{RUBY_VERSION}" do
         ENV["PKG_CONFIG_LIBDIR"]="/usr/lib/pkgconfig:/usr/local/lib/pkgconfig"
         system "/bin/bash ./configure --prefix=#{vendor_prefix(prefix)}/portable-ruby/#{RUBY_VENDOR_VERSION} --disable-install-doc --disable-install-rdoc --with-out-ext=tk --without-gmp"
         system "/usr/bin/make -j#{cpu_core}"
         system "/usr/bin/make install"
       end
 
-      system "/bin/rm -rf /tmp/ruby-#{RUBY_VERSION}"
+      system "/bin/rm -rf /tmp/portable-ruby-#{RUBY_VERSION}"
       system "/bin/rm /tmp/ruby-#{RUBY_VERSION}.tar.gz"
     else
       # linuxbrew use the bottle of portable ruby.
@@ -292,7 +310,7 @@ end
 
 # Invalidate sudo timestamp before exiting (if it wasn't active before).
 Kernel.system "/usr/bin/sudo -n -v 2>/dev/null"
-at_exit { Kernel.system "/usr/bin/sudo", "-k" } unless $?.success?
+at_exit { Kernel.system "/usr/bin/sudo", "-k" } unless $CHILD_STATUS.success?
 
 # The block form of Dir.chdir fails later if Dir.CWD doesn't exist which I
 # guess is fair enough. Also sudo prints a warning message for no good reason
@@ -310,7 +328,7 @@ unless mac?
     HOMEBREW_PREFIX = HOMEBREW_PREFIX_DEFAULT.freeze
   else
     Kernel.system "/usr/bin/sudo -n -v 2>/dev/null"
-    unless $?.success?
+    unless $CHILD_STATUS.success?
       ohai "Select the Linuxbrew installation directory"
       puts "- #{Tty.bold}Enter your password#{Tty.reset} to install to #{Tty.underline}#{HOMEBREW_PREFIX_DEFAULT}#{Tty.reset} (#{Tty.bold}recommended#{Tty.reset})"
       puts "- #{Tty.bold}Press Control-D#{Tty.reset} to install to #{Tty.underline}#{ENV["HOME"]}/.linuxbrew#{Tty.reset}"
@@ -334,6 +352,32 @@ installer again:
     sudo chmod 775 #{HOMEBREW_PREFIX}
 EOABORT
 
+# TODO: bump version when new macOS is released
+if mac? && (macos_version > MACOS_LATEST_SUPPORTED ||
+   macos_version < MACOS_OLDEST_SUPPORTED)
+
+  who = "We"
+  if macos_version > MACOS_LATEST_SUPPORTED
+    what = "pre-release version"
+  elsif macos_version < MACOS_OLDEST_SUPPORTED
+    who << " (and Apple)"
+    what = "old version"
+  else
+    return
+  end
+  ohai "You are using macOS #{macos_version.parts.join(".")}."
+  ohai "#{who} do not provide support for this #{what}."
+
+  puts <<-EOS
+This installation may not succeed.
+After installation, you will encounter build failures and other breakages.
+Please create pull-requests instead of asking for help on Homebrew's
+GitHub, Discourse, Twitter or IRC. As you are running this #{what},
+you are responsible for resolving any issues you experience.
+
+  EOS
+end
+
 ohai "This script will install:"
 puts "#{HOMEBREW_PREFIX}/bin/brew"
 puts "#{HOMEBREW_PREFIX}/share/doc/homebrew"
@@ -343,27 +387,34 @@ puts "#{HOMEBREW_PREFIX}/etc/bash_completion.d/brew"
 puts "#{HOMEBREW_CACHE}/"
 puts HOMEBREW_REPOSITORY.to_s
 
-group_chmods = %w[ bin bin/brew etc include lib sbin share var
-                   etc/bash_completion.d lib/pkgconfig var/log
-                   share/aclocal share/doc share/info share/locale share/man
-                   share/man/man1 share/man/man2 share/man/man3 share/man/man4
-                   share/man/man5 share/man/man6 share/man/man7 share/man/man8].
+# Keep relatively in sync with
+# https://github.com/Homebrew/brew/blob/master/Library/Homebrew/keg.rb
+group_chmods = %w[bin etc include lib sbin share opt var
+                  Frameworks
+                  etc/bash_completion.d lib/pkgconfig
+                  share/aclocal share/doc share/info share/locale share/man
+                  share/man/man1 share/man/man2 share/man/man3 share/man/man4
+                  share/man/man5 share/man/man6 share/man/man7 share/man/man8
+                  var/log
+                  bin/brew].
                map { |d| File.join(HOMEBREW_PREFIX, d) }.
                select { |d| chmod?(d) }
 # zsh refuses to read from these directories if group writable
 zsh_dirs = %w[share/zsh share/zsh/site-functions].
            map { |d| File.join(HOMEBREW_PREFIX, d) }
+mkdirs = %w[bin etc include lib sbin share var opt
+            share/zsh share/zsh/site-functions
+            Cellar Caskroom Homebrew Frameworks].
+         map { |d| File.join(HOMEBREW_PREFIX, d) }.
+         reject { |d| File.directory?(d) }
+
 user_chmods = zsh_dirs.select { |d| user_only_chmod?(d) }
 chmods = group_chmods + user_chmods
 chowns = chmods.select { |d| chown?(d) }
 chgrps = chmods.select { |d| chgrp?(d) }
-mkdirs = %w[Cellar Homebrew bin etc include lib opt sbin share share/zsh share/zsh/site-functions var].
-         map { |d| File.join(HOMEBREW_PREFIX, d) }.
-         reject { |d| File.directory?(d) }
-mkdirs << HOMEBREW_REPOSITORY unless mkdirs.include?(HOMEBREW_REPOSITORY) || File.directory?(HOMEBREW_REPOSITORY)
 
 group = `id -gn`.chomp
-abort "error: id -gn: failed" unless $?.success? && !group.empty?
+abort "error: id -gn: failed" unless $CHILD_STATUS.success? && !group.empty?
 
 unless group_chmods.empty?
   ohai "The following existing directories will be made group writable:"
@@ -389,7 +440,7 @@ if should_install_command_line_tools?
   ohai "The Xcode Command Line Tools will be installed."
 end
 
-wait_for_user if STDIN.tty? && !ENV["TRAVIS"]
+wait_for_user if STDIN.tty? && !ENV["CI"]
 
 if File.directory? HOMEBREW_PREFIX
   sudo "/bin/chmod", "u+rwx", *chmods unless chmods.empty?
@@ -422,7 +473,7 @@ if should_install_command_line_tools?
   # This temporary file prompts the 'softwareupdate' utility to list the Command Line Tools
   clt_placeholder = "/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
   sudo "/usr/bin/touch", clt_placeholder
-  clt_label = `softwareupdate -l | grep -B 1 -E "Command Line (Developer|Tools)" | awk -F"*" '/^ +\\*/ {print $2}' | sed 's/^ *//' | tail -n1`.chomp
+  clt_label = `/usr/sbin/softwareupdate -l | grep -B 1 -E "Command Line (Developer|Tools)" | awk -F"*" '/^ +\\*/ {print $2}' | sed 's/^ *//' | tail -n1`.chomp
   ohai "Installing #{clt_label}"
   sudo "/usr/sbin/softwareupdate", "-i", clt_label
   sudo "/bin/rm", "-f", clt_placeholder
@@ -438,7 +489,7 @@ if should_install_command_line_tools? && STDIN.tty?
   sudo "/usr/bin/xcode-select", "--switch", "/Library/Developer/CommandLineTools"
 end
 
-abort <<-EOABORT if mac? && `/usr/bin/xcrun clang 2>&1` =~ /license/ && !$?.success?
+abort <<-EOABORT if mac? && `/usr/bin/xcrun clang 2>&1` =~ /license/ && !$CHILD_STATUS.success?
 You have not agreed to the Xcode license.
 Before running the installer again please agree to the license by opening
 Xcode.app or running:
@@ -499,16 +550,22 @@ puts
 print "\a"
 
 # Use an extra newline and bold to avoid this being missed.
-ohai "Homebrew has enabled anonymous aggregate user behaviour analytics."
+ohai "Homebrew has enabled anonymous aggregate formulae and cask analytics."
 puts <<-EOS
 #{Tty.bold}Read the analytics documentation (and how to opt-out) here:
   #{Tty.underline}https://docs.brew.sh/Analytics.html#{Tty.reset}
 
 EOS
 
+ohai "Homebrew is run entirely by unpaid volunteers. Please consider donating:"
+puts <<-EOS
+  #{Tty.underline}https://github.com/Homebrew/brew#donations#{Tty.reset}
+EOS
+
 if git
   Dir.chdir HOMEBREW_REPOSITORY do
     system git, "config", "--local", "--replace-all", "homebrew.analyticsmessage", "true"
+    system git, "config", "--local", "--replace-all", "homebrew.caskanalyticsmessage", "true"
   end
 end
 
@@ -532,10 +589,10 @@ if !mac?
     brew install gcc
 - After modifying your shell profile, you may need to restart your session
   (logout and then log back in) if the brew command isn't found.
-EOS
+  EOS
 elsif macos_version < "10.9" && macos_version > "10.6"
   `/usr/bin/cc --version 2> /dev/null` =~ /clang-(\d{2,})/
-  version = $1.to_i
+  version = Regexp.last_match(1).to_i
   if version < 425
     puts "- Install the #{Tty.bold}Command Line Tools for Xcode:"
     puts "    #{Tty.underline}https://developer.apple.com/downloads#{Tty.reset}"

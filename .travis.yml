@@ -2,17 +2,20 @@ language: ruby
 os: linux
 dist: trusty
 sudo: required
-rvm: 2.3.3
+rvm: 2.3.7
 
 before_script:
   - gem install rubocop
 
 script:
   - rubocop
-  - export HOMEBREW_FORCE_VENDOR_RUBY=1
   - ./install --force-curl
   - ./uninstall -f || true
   - sudo rm -rf /home/linuxbrew/.linuxbrew
-  - ./install
+  - ./install.sh
   - /home/linuxbrew/.linuxbrew/bin/brew install ack
   - ./uninstall -f || true
+
+branches:
+  only:
+    - master

@@ -1,3 +1,4 @@
 #!/bin/sh
-set -eu
-exec ruby -e "`curl -fsSL https://raw.githubusercontent.com/z80oolong/linuxbrew-altinstall/master/install`"
+set -e
+umask 022
+exec ruby -e "`curl -fsSL https://raw.githubusercontent.com/z80oolong/linuxbrew-altinstall/master/install`" "$@"
