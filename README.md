@@ -21,7 +21,7 @@
 
 ## 使用法
 
-Linuxbrew の自動インストールスクリプト ```altinstall.rb``` の起動方法は、 [Linuxbrew 公式ページ][BREW]による [Linuxbrew][BREW] のインストールスクリプトの起動方法とほぼ同じですが、 ```altinstall.rb``` の起動前に、 [Linuxbrew][BREW] に依存するシステムのパッケージの他に、 ```openssl, readline, libyaml, libgdbm-dev``` をインストールする必要が有ります。
+Linuxbrew の自動インストールスクリプト ```altinstall.rb``` の起動方法は、 [Linuxbrew 公式ページ][BREW]による [Linuxbrew][BREW] のインストールスクリプトの起動方法とほぼ同じですが、 ```altinstall.rb``` の起動前に、 [Linuxbrew][BREW] に依存するシステムのパッケージの他に、 ```libssl-dev, readline, libyaml, libgdbm-dev``` をインストールする必要が有ります。
 
 例えば、 Debian 系のディストリビューションの場合は、以下のようにしてパッケージをインストールします。
 
