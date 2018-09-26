@@ -27,7 +27,7 @@ Linuxbrew の自動インストールスクリプト ```altinstall.rb``` の起�
 
 ```
  $ sudo apt-get install build-essential curl file git python-setuptools ruby
- $ sudo apt-get install openssl libreadline6-dev libyaml-dev libgdbm-dev
+ $ sudo apt-get install libssl-dev libreadline6-dev libyaml-dev libgdbm-dev
 ```
 
 次に、 [Linuxbrew 公式ページ][BREW]による [Linuxbrew の自動インストールスクリプト][BRIN]の起動方法に代えて、以下のコマンドを実行して [Linuxbrew][BREW] を導入します。
