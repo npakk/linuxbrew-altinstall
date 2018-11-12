@@ -239,7 +239,7 @@ class PortableRuby
   def bottle_tag
     if linux?
       case arch
-      when /^armv[678]l/; return "armv6l_linux"
+      when /^armv[678]l/; return "armv6_linux"
       when "x86_64"; return "x86_64_linux"
       else; return nil
       end
