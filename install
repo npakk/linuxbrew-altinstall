@@ -240,6 +240,7 @@ class PortableRuby
     if linux?
       case arch
       when /^armv[678]l/; return "armv6_linux"
+      when /^aarch64/; return "
       when "x86_64"; return "x86_64_linux"
       else; return nil
       end
@@ -274,7 +275,7 @@ class PortableRuby
 
       Dir.chdir "/tmp/portable-ruby-#{RUBY_VERSION}" do
         ENV["PKG_CONFIG_LIBDIR"]="/usr/lib/pkgconfig:/usr/local/lib/pkgconfig"
-        system "/bin/bash ./configure --prefix=#{vendor_prefix(prefix)}/portable-ruby/#{RUBY_VENDOR_VERSION} --disable-install-doc --disable-install-rdoc --with-out-ext=tk --without-gmp"
+        system "/bin/bash ./configure --prefix=#{vendor_prefix(prefix)}/portable-ruby/#{RUBY_VENDOR_VERSION} --disable-dependency-tracking --enable-load-relative --with-static-linked-ext --disable-install-doc --disable-install-rdoc --with-out-ext=tk --without-gmp"
         system "/usr/bin/make -j#{cpu_core}"
         system "/usr/bin/make install"
       end
