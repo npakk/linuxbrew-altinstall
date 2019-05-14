@@ -226,8 +226,8 @@ def arch
 end
 
 # return true if '--force-update' flag is specified.
-def force_update?
-  return ARGV.include?("--force-update")
+def force_build_curl?
+  return ARGV.include?("--force-build-curl")
 end
 
 # Class for installing vendor portable ruby
@@ -539,11 +539,27 @@ Dir.chdir HOMEBREW_REPOSITORY do
       system "#{HOMEBREW_PREFIX}/bin/brew", "install", "https://raw.githubusercontent.com/z80oolong/gcc-arm-wrap/master/gcc-arm-wrap.rb"
     end
 
-    if force_update? then
-      ENV["HOMEBREW_CC"] = "gcc"; ENV["HOMEBREW_CXX"] = "g++"
-      system "#{HOMEBREW_PREFIX}/bin/brew", "update", "--force"
-    else
-      system "#{HOMEBREW_PREFIX}/bin/brew", "tap", "homebrew/core"
+    unless force_build_curl? then
+      # copy curl and git to $HOMEBREW_PREFIX/opt/bin to prevent to build curl and git.
+      system "/bin/mkdir", "-p", "#{HOMEBREW_PREFIX}/Cellar/curl/7.63.0-dummy/bin"
+      system "/bin/mkdir", "-p", "#{HOMEBREW_PREFIX}/Cellar/git/2.21.0-dummy/bin"
+
+      system "/bin/cp", "-p", "/usr/bin/curl", "#{HOMEBREW_PREFIX}/Cellar/curl/7.63.0-dummy/bin"
+      system "/bin/cp", "-p", "/usr/bin/git", "#{HOMEBREW_PREFIX}/Cellar/git/2.21.0-dummy/bin"
+
+      system "/bin/ln", "-sf", "#{HOMEBREW_PREFIX}/Cellar/curl/7.63.0-dummy", "#{HOMEBREW_PREFIX}/opt/curl"
+      system "/bin/ln", "-sf", "#{HOMEBREW_PREFIX}/Cellar/git/2.21.0-dummy", "#{HOMEBREW_PREFIX}/opt/git"
+    end
+
+    system "#{HOMEBREW_PREFIX}/bin/brew", "update", "--force"
+
+    unless force_build_curl? then
+      # remove dummy curl and git.
+      system "/bin/rm", "#{HOMEBREW_PREFIX}/opt/curl"
+      system "/bin/rm", "-rf", "#{HOMEBREW_PREFIX}/Cellar/curl"
+
+      system "/bin/rm", "#{HOMEBREW_PREFIX}/opt/git"
+      system "/bin/rm", "-rf", "#{HOMEBREW_PREFIX}/Cellar/git"
     end
   else
     # -m to stop tar erroring out if it can't modify the mtime for root owned directories
