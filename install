@@ -94,8 +94,10 @@ end
 def sudo?
   return @have_sudo unless @have_sudo.nil?
 
-  Kernel.system "/usr/bin/sudo", "-v"
-  @have_sudo = $CHILD_STATUS && $CHILD_STATUS.success?
+  Kernel.system "/usr/bin/sudo", "-l", "mkdir"
+  @have_sudo = $CHILD_STATUS.success?
+rescue Interrupt
+  exit
 end
 
 def sudo(*args)
@@ -218,8 +220,19 @@ def shell_profile
   end
 end
 
+# return architecture of users' environment.
+def arch
+  return (linux? ? `uname -m` : `uname -p`).chomp
+end
+
+# return true if '--force-update' flag is specified.
+def force_update?
+  return ARGV.include?("--force-update")
+end
+
 # Class for installing vendor portable ruby
-# Fix to install vendor portable ruby before 'brew update --force' by Z.OOL. <zool@zool.jpn.org>
+# Fix to install vendor portable ruby before 'brew update --force' or 'brew tap homebrew/core'
+# by Z.OOL. <zool@zool.jpn.org>
 class PortableRuby
   RUBY_VERSION = "2.3.7"
   RUBY_VENDOR_VERSION = "2.3.7"
@@ -230,10 +243,6 @@ class PortableRuby
 
   def cpu_core
     return `/usr/bin/getconf _NPROCESSORS_ONLN`.chomp.to_i
-  end
-
-  def arch
-    return (linux? ? `uname -m` : `uname -p`).chomp
   end
 
   def bottle_tag
@@ -329,8 +338,8 @@ unless mac?
   if File.writable?(HOMEBREW_PREFIX_DEFAULT) || File.writable?("/home/linuxbrew") || File.writable?("/home")
     HOMEBREW_PREFIX = HOMEBREW_PREFIX_DEFAULT.freeze
   else
-    Kernel.system "/usr/bin/sudo -n -v 2>/dev/null"
-    unless $CHILD_STATUS.success?
+    sudo_output = `/usr/bin/sudo -n -l mkdir 2>&1`
+    if !$CHILD_STATUS.success? && sudo_output == "sudo: a password is required\n"
       ohai "Select the Linuxbrew installation directory"
       puts "- #{Tty.bold}Enter your password#{Tty.reset} to install to #{Tty.underline}#{HOMEBREW_PREFIX_DEFAULT}#{Tty.reset} (#{Tty.bold}recommended#{Tty.reset})"
       puts "- #{Tty.bold}Press Control-D#{Tty.reset} to install to #{Tty.underline}#{ENV["HOME"]}/.linuxbrew#{Tty.reset}"
@@ -523,7 +532,19 @@ Dir.chdir HOMEBREW_REPOSITORY do
     # Fixed by Z.OOL. <zool@zool.jpn.org>
     PortableRuby::install(HOMEBREW_PREFIX)
 
-    system "#{HOMEBREW_PREFIX}/bin/brew", "update", "--force"
+    ENV["HOMEBREW_NO_AUTO_UPDATE"] = "1"
+
+    if /^(armv[678]l|aarch64)/ === arch
+      # install gcc wrapper script for ARM architecture.
+      system "#{HOMEBREW_PREFIX}/bin/brew", "install", "https://raw.githubusercontent.com/z80oolong/gcc-arm-wrap/master/gcc-arm-wrap.rb"
+    end
+
+    if force_update? then
+      ENV["HOMEBREW_CC"] = "gcc"; ENV["HOMEBREW_CXX"] = "g++"
+      system "#{HOMEBREW_PREFIX}/bin/brew", "update", "--force"
+    else
+      system "#{HOMEBREW_PREFIX}/bin/brew", "tap", "homebrew/core"
+    end
   else
     # -m to stop tar erroring out if it can't modify the mtime for root owned directories
     # pipefail to cause the exit status from curl to propagate if it fails
