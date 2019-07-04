@@ -175,7 +175,7 @@ def git
     "git"
   else
     exe = `xcrun -find git 2>/dev/null`.chomp
-    exe if $CHILD_STATUS && $CHILD_STATUS.success? && !exe.empty? && File.executable?(exe)
+    exe if $CHILD_STATUS&.success? && !exe.empty? && File.executable?(exe)
   end
 
   return unless @git
@@ -318,6 +318,11 @@ class PortableRuby
     return self.new.install(prefix)
   end
 end
+
+# The USER env var is not guaranteed to be available, so fall back to id if not
+# provided. We destructively set it in the environment to make it available to
+# any sub-processes called.
+ENV["USER"] ||= `id -un`.chomp
 
 # Invalidate sudo timestamp before exiting (if it wasn't active before).
 Kernel.system "/usr/bin/sudo -n -v 2>/dev/null"
