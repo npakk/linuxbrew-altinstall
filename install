@@ -448,7 +448,7 @@ end
 sudo "/bin/mkdir", "-p", HOMEBREW_CACHE unless File.directory? HOMEBREW_CACHE
 sudo "/bin/chmod", "g+rwx", HOMEBREW_CACHE if chmod? HOMEBREW_CACHE
 sudo CHOWN, ENV["USER"], HOMEBREW_CACHE if chown? HOMEBREW_CACHE
-sudo CHGRP, "admin", HOMEBREW_CACHE if chgrp? HOMEBREW_CACHE
+sudo CHGRP, group, HOMEBREW_CACHE if chgrp? HOMEBREW_CACHE
 system "/usr/bin/touch", "#{HOMEBREW_CACHE}/.cleaned" if File.directory? HOMEBREW_CACHE
 
 if should_install_command_line_tools?
