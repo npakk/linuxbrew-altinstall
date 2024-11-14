@@ -13,7 +13,7 @@ def mac?
 end
 
 def linux?
-  RUBY_PLATFORM[/linux/]
+  RUBY_PLATFORM
 end
 
 BREW_REPO = "https://github.com/Homebrew/brew".freeze
