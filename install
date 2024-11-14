@@ -12,6 +12,10 @@ def mac?
   RUBY_PLATFORM[/darwin/]
 end
 
+def linux?
+  RUBY_PLATFORM[/linux/]
+end
+
 BREW_REPO = "https://github.com/Homebrew/brew".freeze
 if mac?
   HOMEBREW_PREFIX = "/usr/local".freeze
