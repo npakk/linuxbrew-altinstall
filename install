@@ -242,7 +242,7 @@ class PortableRuby
   end
 
   def bottle_url
-    return "https://homebrew.bintray.com/bottles-portable-ruby/portable-ruby-#{RUBY_VENDOR_VERSION}.#{bottle_tag}.bottle.tar.gz"
+    return "https://github.com/Homebrew/homebrew-portable-ruby/releases/download/#{RUBY_VENDOR_VERSION}/portable-ruby-#{RUBY_VENDOR_VERSION}.#{bottle_tag}.bottle.tar.gz"
   end
 
   public
